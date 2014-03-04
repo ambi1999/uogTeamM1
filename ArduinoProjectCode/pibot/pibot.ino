@@ -6,6 +6,8 @@ const int pingPin = 13;
 const int motorPin1 = 9;
 const int motorPin2 = 8;
 Servo myservo;
+
+//sdfs
 int Fan = 3;
 int lightSensorValue = 0;
 int InfraredLed = 12;
