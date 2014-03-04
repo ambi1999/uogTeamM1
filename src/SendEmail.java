@@ -76,6 +76,7 @@ public class SendEmail {
 
 		from = IO.readString("Enter User Name");
 		password = IO.readString("Enter Password");
+		to  = IO.readString("Enter Recipient");
 		host = IO
 				.readString("Enter host, For gmail enter smtp.gmail.com, For yahoo enter smtp.mail.yahoo.com");
 		portformail = IO
