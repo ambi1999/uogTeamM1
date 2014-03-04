@@ -28,7 +28,7 @@ public class SendEmail {
 
 	static String from = "";
 	static String password = "";
-	static String[] to = { "ajayal@glos.ac.uk" }; // list of recipient email
+	static String to = ""; // list of recipient email
 	// addresses
 	static String host = "";
 	static String portformail = "";
