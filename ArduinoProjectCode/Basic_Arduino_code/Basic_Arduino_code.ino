@@ -1,6 +1,7 @@
+//Written by Ben Woodcock
 #include <Servo.h> // references inbuilt arduino library 
 const int tempsensorPin = A1;
-const float baselineTemp = 32.0;
+const float baselineTemp = 32.0; //This sets the base line temperature at 32 degrees
 const int lightSensorPin = A0;
 const int pingPin = 13;
 const int motorPin1 = 9;
@@ -13,10 +14,25 @@ int inPin = 11;
 int safeZone = 30;
 int LEDpins1= 1;
 int LEDpins2= 2;
+int LEDlights1 = 4;
+int LEDlights2 = 5;
+
 void setup(){
  Serial.begin(9600); 
  myservo.attach(7);
  myservo.write(90);
+ pinMode(LEDpins1, OUTPUT);
+ pinMode(LEDpins2, OUTPUT);
+ pinMode(Fan, OUTPUT);
+ pinMode(motorPin1, OUTPUT);
+ pinMode(motorPin2, OUTPUT);
+ pinMode(InfraredLed, OUTPUT);
+ pinMode(pingPin, OUTPUT);
+ pinMode(LEDlights1, OUTPUT);
+ pinMode(LEDlights2, OUTPUT);
+ pinMode(inPin, INPUT);
+ pinMode(tempsensorPin, INPUT);
+ pinMode(lightSensorPin, INPUT);
  }
 
 void loop(){
@@ -34,19 +50,26 @@ void loop(){
   { 
     digitalWrite(InfraredLed, HIGH);
   }
-  else  
+  else if (lightSensorValue >780 && lightSensorValue <850)
   {
-   digitalWrite(InfraredLed, LOW); 
+   digitalWrite(LEDlights1,HIGH);
+   digitalWrite(LEDlights2,HIGH); 
+  }
+  else
+  {
+    digitalWrite(LEDlights1,LOW);
+    digitalWrite(LEDlights2,LOW);
+    digitalWrite(InfraredLed,LOW);
   }
   long duration, cm;
-  pinMode(pingPin, OUTPUT);
+
   digitalWrite(pingPin, LOW);
   delayMicroseconds(2);              
   digitalWrite(pingPin, HIGH);
   delayMicroseconds(5);
   digitalWrite(pingPin, LOW);
   
-  pinMode(inPin, INPUT);
+  
   duration = pulseIn(inPin, HIGH);
   
   cm = microsecondsToCentimeters(duration);
@@ -64,14 +87,14 @@ void loop(){
     myservo.write(0);
   }
   delay(100);
-  pinMode(pingPin, OUTPUT);
+
   digitalWrite(pingPin, LOW);
   delayMicroseconds(2);            // sends out signal from ultrasonic sensor - if more than safezone value, turn motor 1 on - if less than safezone value, the servo head turns 170 degrees (turns the other way)
   digitalWrite(pingPin, HIGH);
   delayMicroseconds(5);
   digitalWrite(pingPin, LOW);
   
-  pinMode(inPin, INPUT);
+
   duration = pulseIn(inPin, HIGH);
   
   cm = microsecondsToCentimeters(duration);
@@ -90,14 +113,14 @@ void loop(){
    myservo.write(170);
   }
   delay(100);
-    pinMode(pingPin, OUTPUT);
+
   digitalWrite(pingPin, LOW);
   delayMicroseconds(2);
   digitalWrite(pingPin, HIGH);
   delayMicroseconds(5);
   digitalWrite(pingPin, LOW);
   
-  pinMode(inPin, INPUT);
+
   duration = pulseIn(inPin, HIGH);
   
   cm = microsecondsToCentimeters(duration);
