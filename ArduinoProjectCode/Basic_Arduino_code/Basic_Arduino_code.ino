@@ -11,7 +11,8 @@ int lightSensorValue = 0;
 int InfraredLed = 12;
 int inPin = 11;
 int safeZone = 30;
-
+int LEDpins1= 1;
+int LEDpins2= 2;
 void setup(){
  Serial.begin(9600); 
  myservo.attach(7);
@@ -19,6 +20,13 @@ void setup(){
  }
 
 void loop(){
+  for(int i=0;i<15;i++){
+    digitalWrite(LEDpins1, HIGH);
+  }
+  for(int i=0;i<15;i++){
+    digitalWrite(LEDpins2,HIGH);
+  }
+  
   lightSensorValue = analogRead(lightSensorPin);
   delay(1000);
   if(lightSensorValue<780)                // reads data from light sensor - if value is less than 780, switch on the Infrared LED
