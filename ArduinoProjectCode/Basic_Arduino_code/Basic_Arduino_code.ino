@@ -19,28 +19,32 @@ int LEDlights2 = 5;
 
 void setup(){
  Serial.begin(9600); 
- myservo.attach(7);
- myservo.write(90);
- pinMode(LEDpins1, OUTPUT);
- pinMode(LEDpins2, OUTPUT);
- pinMode(Fan, OUTPUT);
- pinMode(motorPin1, OUTPUT);
- pinMode(motorPin2, OUTPUT);
- pinMode(InfraredLed, OUTPUT);
- pinMode(pingPin, OUTPUT);
- pinMode(LEDlights1, OUTPUT);
- pinMode(LEDlights2, OUTPUT);
- pinMode(inPin, INPUT);
- pinMode(tempsensorPin, INPUT);
- pinMode(lightSensorPin, INPUT);
+ myservo.attach(7); // This is stating what pin the servo motor is attached to
+ myservo.write(90); // This makes the default angle of the servo motor 90 degrees 
+ pinMode(LEDpins1, OUTPUT); // These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending
+ pinMode(LEDpins2, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(Fan, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(motorPin1, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(motorPin2, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(InfraredLed, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(pingPin, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(LEDlights1, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(LEDlights2, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(inPin, INPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(tempsensorPin, INPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(lightSensorPin, INPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
  }
 
 void loop(){
-  for(int i=0;i<15;i++){
+  for(int i=0;i<15;i++){ // This for loop controls the led's blinking i have made this loop go round 15 times because the raspberry pi takes time to boot 
     digitalWrite(LEDpins1, HIGH);
+    delay(1000);
+    digitalWrite(LEDpins1, LOW);
   }
-  for(int i=0;i<15;i++){
+  for(int i=0;i<15;i++){// This for loop controls the final led's blinking that will give the indication that the raspberry pi is nearly booted 
     digitalWrite(LEDpins2,HIGH);
+    delay(1000);
+    digitalWrite(LEDpins2,LOW);
   }
   
   lightSensorValue = analogRead(lightSensorPin);
@@ -50,17 +54,18 @@ void loop(){
   { 
     digitalWrite(InfraredLed, HIGH);
   }
-  else if (lightSensorValue >780 && lightSensorValue <850)
+  else if (lightSensorValue >780 && lightSensorValue <850) // however if the light sensor reads a value that is between 780 and 850 then two LED lights come on
   {
    digitalWrite(LEDlights1,HIGH);
    digitalWrite(LEDlights2,HIGH); 
   }
-  else
+  else // but if the value is above 850 then both the LED's and the Infrared leds remain off
   {
     digitalWrite(LEDlights1,LOW);
     digitalWrite(LEDlights2,LOW);
     digitalWrite(InfraredLed,LOW);
   }
+  
   long duration, cm;
 
   digitalWrite(pingPin, LOW);
