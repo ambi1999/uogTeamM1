@@ -1,0 +1,68 @@
+// Ryan Maycroft
+// this code allows you to test the arduino and the pi's communication
+// First code is for the arduino
+// second code is for use on the raspberry pi
+
+
+ARDUINO
+
+
+/*
+  ArduinoListens.ino
+  
+  Pi sends a digit (1 - 9) to Arduino,
+  and Arduino blinks LED at D13 that many times.
+ */
+ 
+ #define DELA 500   // Long delay.
+ #define DSHORT 250 // Short delay.
+ const int ledPin = 13;
+
+void setup() {                
+  pinMode(ledPin, OUTPUT); // Initialize pin as output.
+  // Pin 13 has an LED hooked to it.
+  Serial.begin(9600);  
+}
+
+void loop() {
+   if ( Serial.available() )
+   { light(Serial.read() - '0'); } // How many positions past ASCII 0?
+   delay (DELA);
+}
+
+void light(int n) {
+  for (int i = 0; i < n; i++)
+  {
+  digitalWrite(ledPin, HIGH);   // Turn the LED on.
+  delay(DSHORT);        
+  digitalWrite(ledPin, LOW);   // Turn the LED off.
+  delay(DSHORT);               // Wait.
+  }
+}
+
+
+RASPBERRY PI
+
+#!/bin/bash
+# Accepts command-line arg telling Arduino how many times to blink
+#+ (0 - 9).
+
+DEFAULT=1          # One blink if no command-line arg.
+
+if [ -z "$1" ]     # If no command-line arg ...
+then
+  blinks=$DEFAULT
+else
+  blinks=$1
+fi
+
+port=/dev/ttyAMA0  # Direct connection to Pi rx and dx pins.
+
+echo $blinks > $port
+
+exit $?
+
+# TODO:
+# ----
+# 1) Error checking on command-line input.
+# 2) More than 9 blinks by parsing multi-character command-line arg.
