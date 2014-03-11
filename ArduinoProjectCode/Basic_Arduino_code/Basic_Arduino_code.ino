@@ -1,4 +1,14 @@
-//Written by Ben Woodcock
+/*An Automated Robot controlled via a web-site hosted by the Raspberry Pi.
+The Raspberry Pi is connected to the Arduino and the Arduino powers the robot.
+We are Using a model B Pi and an Arduino MEGA 2560
+
+All code must be commented and code must compile before being commited!
+
+Code Written by: Ben Woodcock
+Edited By: Ashley Hathaway and Ryan Maycroft
+Copyright PiBot Group
+*/
+
 #include <Servo.h> // references inbuilt arduino library 
 const int tempsensorPin = A1;// this line states that the temperature sensor data will be coming in on the analog port 1
 const float baselineTemp = 32.0; //This sets the base line temperature at 32 degrees
@@ -33,39 +43,46 @@ void setup(){
  pinMode(inPin, INPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
  pinMode(tempsensorPin, INPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
  pinMode(lightSensorPin, INPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
- }
-
-void loop(){
-  for(int i=0;i<15;i++){ // This for loop controls the led's blinking i have made this loop go round 15 times because the raspberry pi takes time to boot 
+    for(int i=0;i<15;i++){ // This for loop controls the led's blinking i have made this loop go round 15 times because the raspberry pi takes time to boot 
     digitalWrite(LEDpins1, HIGH);
-    delay(1000);
+    delay(500);
     digitalWrite(LEDpins1, LOW);
+    delay(500);
   }
   for(int i=0;i<15;i++){// This for loop controls the final led's blinking that will give the indication that the raspberry pi is nearly booted 
     digitalWrite(LEDpins2,HIGH);
-    delay(1000);
+    delay(500);
     digitalWrite(LEDpins2,LOW);
+    delay(500);
   }
-  
-  lightSensorValue = analogRead(lightSensorPin);
+  digitalWrite(LEDpins2,HIGH);
+}
+
+void loop(){
+
+ 
+   lightSensorValue = analogRead(lightSensorPin);
   delay(1000);
+  Serial.print("Photo Resistor Value: ");
+  Serial.print(lightSensorValue);
+  Serial.println();
   if(lightSensorValue<780)                // reads data from light sensor - if value is less than 780, switch on the Infrared LED
                                           // if more than 780, the infrared light remains off
   { 
-    digitalWrite(InfraredLed, HIGH);
+    
+  digitalWrite(InfraredLed, HIGH);
+
   }
-  else if (lightSensorValue >780 && lightSensorValue <850) // however if the light sensor reads a value that is between 780 and 850 then two LED lights come on
+  else if (lightSensorValue >780 && lightSensorValue <1000) // however if the light sensor reads a value that is between 780 and 850 then two LED lights come on
   {
    digitalWrite(LEDlights1,HIGH);
-   digitalWrite(LEDlights2,HIGH); 
   }
-  else // but if the value is above 850 then both the LED's and the Infrared leds remain off
+  else 
   {
     digitalWrite(LEDlights1,LOW);
-    digitalWrite(LEDlights2,LOW);
-    digitalWrite(InfraredLed,LOW);
+    
   }
-  
+
   long duration, cm;
 
   digitalWrite(pingPin, LOW);
