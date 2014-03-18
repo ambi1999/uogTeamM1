@@ -8,19 +8,23 @@ Code Written by: Ben Woodcock
 Edited By: Ashley Hathaway and Ryan Maycroft
 Copyright PiBot Group
 */
-
+#define echoPin 7 // Echo Pin
+#define trigPin 8 // Trigger Pin
+#define LEDPin 13 // Onboard LED
 #include <Servo.h> // references inbuilt arduino library 
 const int tempsensorPin = A1;// this line states that the temperature sensor data will be coming in on the analog port 1
-const float baselineTemp = 32.0; //This sets the base line temperature at 32 degrees
+const float baselineTemp = 20.0; //This sets the base line temperature at 32 degrees
 const int lightSensorPin = A0; // this line states that the light sensor data will be coming in on the analog port 0 
-const int pingPin = 13; //these lines of code set what pins are being used and by naming them it makes it easier to change 
+int maximumRange = 200; // Maximum range needed
+int minimumRange = 0; // Minimum range needed
+long duration, distance; // Duration used to calculate distance
 const int motorPin1 = 9;//these lines of code set what pins are being used and by naming them it makes it easier to change
 const int motorPin2 = 8;//these lines of code set what pins are being used and by naming them it makes it easier to change
 Servo myservo;
 int Fan = 3; //these lines of code set what pins are being used and by naming them it makes it easier to change
 int lightSensorValue = 0; // This sets the light sensor value to 0 when starting 
 int InfraredLed = 12;//these lines of code set what pins are being used and by naming them it makes it easier to change
-int inPin = 11;//these lines of code set what pins are being used and by naming them it makes it easier to change
+
 int safeZone = 30; // this states that anywhere from 0 to 30 is the safezone
 int LEDpins1= 1;//these lines of code set what pins are being used and by naming them it makes it easier to change
 int LEDpins2= 2;//these lines of code set what pins are being used and by naming them it makes it easier to change
@@ -29,21 +33,22 @@ int LEDlights2 = 5;//these lines of code set what pins are being used and by nam
 
 void setup(){
  Serial.begin(9600); 
- myservo.attach(7); // This is stating what pin the servo motor is attached to
- myservo.write(90); // This makes the default angle of the servo motor 90 degrees 
+ pinMode(trigPin, OUTPUT);
+ pinMode(echoPin, INPUT);
+ pinMode(LEDPin, OUTPUT);
  pinMode(LEDpins1, OUTPUT); // These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending
  pinMode(LEDpins2, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
  pinMode(Fan, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
  pinMode(motorPin1, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
  pinMode(motorPin2, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
  pinMode(InfraredLed, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
- pinMode(pingPin, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+
  pinMode(LEDlights1, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
  pinMode(LEDlights2, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
- pinMode(inPin, INPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+
  pinMode(tempsensorPin, INPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
  pinMode(lightSensorPin, INPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
-    for(int i=0;i<15;i++){ // This for loop controls the led's blinking i have made this loop go round 15 times because the raspberry pi takes time to boot 
+/*    for(int i=0;i<15;i++){ // This for loop controls the led's blinking i have made this loop go round 15 times because the raspberry pi takes time to boot 
     digitalWrite(LEDpins1, HIGH);
     delay(500);
     digitalWrite(LEDpins1, LOW);
@@ -56,6 +61,7 @@ void setup(){
     delay(500);
   }
   digitalWrite(LEDpins2,HIGH);
+*/
 }
 
 void loop(){
@@ -83,23 +89,27 @@ void loop(){
     
   }
 
-  long duration, cm;
+  digitalWrite(trigPin, LOW); 
+ delayMicroseconds(2); 
 
-  digitalWrite(pingPin, LOW);
-  delayMicroseconds(2);              
-  digitalWrite(pingPin, HIGH);// this part of code sends out a ping to measure the distance from the ultrasonic sensor
-  delayMicroseconds(5);
-  digitalWrite(pingPin, LOW);
+ digitalWrite(trigPin, HIGH);
+ delayMicroseconds(10); 
+ 
+ digitalWrite(trigPin, LOW);
+ duration = pulseIn(echoPin, HIGH);
+ 
+ //Calculate the distance (in cm) based on the speed of sound.
+ distance = duration/58.2;
   
   
-  duration = pulseIn(inPin, HIGH);// this line waits for the ping to come back to the sensor and also times how long it took the ping to come back
+ 
   
-  cm = microsecondsToCentimeters(duration);
-  Serial.print(cm);
-  Serial.print("cm"); // this section converts how long it took the ping to come back and then  multiplys that value to the speed it was sent out by and thats the calculation for distance 
+
+  Serial.print(distance);
+  Serial.print("distance"); // this section converts how long it took the ping to come back and then  multiplys that value to the speed it was sent out by and thats the calculation for distance 
   Serial.println(); // then it takes the value and puts cm on it to make it a distance value
   
-  if (cm > safeZone) // if the distance is greater than the safezone (30cm) then the two motors will be high making the robot move forward
+  if (distance > safeZone) // if the distance is greater than the safezone (30cm) then the two motors will be high making the robot move forward
   {
   digitalWrite(motorPin1, HIGH);
   digitalWrite(motorPin2, HIGH); 
@@ -110,21 +120,27 @@ void loop(){
   }
   delay(1000);
 
-  digitalWrite(pingPin, LOW);
-  delayMicroseconds(2);            
-  digitalWrite(pingPin, HIGH);// sends out signal from ultrasonic sensor - if more than safezone value, turn motor 1 on - if less than safezone value, the servo head turns 170 degrees (turns the other way)
-  delayMicroseconds(5);
-  digitalWrite(pingPin, LOW);
+   digitalWrite(trigPin, LOW); 
+ delayMicroseconds(2); 
+
+ digitalWrite(trigPin, HIGH);
+ delayMicroseconds(10); 
+ 
+ digitalWrite(trigPin, LOW);
+ duration = pulseIn(echoPin, HIGH);
+ 
+ //Calculate the distance (in cm) based on the speed of sound.
+ distance = duration/58.2;
+  
+  
+ 
   
 
-  duration = pulseIn(inPin, HIGH);
+  Serial.print(distance);
+  Serial.print("distance"); // this section converts how long it took the ping to come back and then  multiplys that value to the speed it was sent out by and thats the calculation for distance 
+  Serial.println(); // then it takes the value and puts cm on it to make it a distance value
   
-  cm = microsecondsToCentimeters(duration);
-  Serial.print(cm);
-  Serial.print("cm");// this section converts how long it took the ping to come back and then  multiplys that value to the speed it was sent out by and thats the calculation for distance 
-  Serial.println();// then it takes the value and puts cm on it to make it a distance value
-  
-  if (cm > safeZone)
+  if (distance > safeZone)
   {
    digitalWrite(motorPin1, HIGH);
    digitalWrite(motorPin2, LOW);
@@ -136,21 +152,27 @@ void loop(){
   }
   delay(100);
 
-  digitalWrite(pingPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(pingPin, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(pingPin, LOW);
+   digitalWrite(trigPin, LOW); 
+ delayMicroseconds(2); 
+
+ digitalWrite(trigPin, HIGH);
+ delayMicroseconds(10); 
+ 
+ digitalWrite(trigPin, LOW);
+ duration = pulseIn(echoPin, HIGH);
+ 
+ //Calculate the distance (in cm) based on the speed of sound.
+ distance = duration/58.2;
+  
+  
+ 
   
 
-  duration = pulseIn(inPin, HIGH);
+  Serial.print(distance);
+  Serial.print("distance"); // this section converts how long it took the ping to come back and then  multiplys that value to the speed it was sent out by and thats the calculation for distance 
+  Serial.println(); // then it takes the value and puts cm on it to make it a distance value
   
-  cm = microsecondsToCentimeters(duration);
-  Serial.print(cm);
-  Serial.print("cm");   // this section converts how long it took the ping to come back and then  multiplys that value to the speed it was sent out by and thats the calculation for distance 
-  Serial.println();// then it takes the value and puts cm on it to make it a distance value
-  
-  if (cm > safeZone)
+  if (distance > safeZone)
   {
    digitalWrite(motorPin1, LOW);
    digitalWrite(motorPin2, HIGH);
@@ -162,12 +184,15 @@ void loop(){
   }
   
   int sensorVal = analogRead(tempsensorPin);
-  Serial.print(sensorVal);
-  float voltage = (sensorVal/1024.0) * 5.0;                      // if temperature value higher than baseline (32 degree c) switch on fan .. if less than baseline, keep fan off
-  Serial.print(voltage);
-  float temperature = (voltage - .5) * 100;
-  Serial.println(temperature);
+ 
+   //sensorVal=160;
+  Serial.println(sensorVal);
+  float temperature = sensorVal;                     // if temperature value higher than baseline (32 degree c) switch on fan .. if less than baseline, keep fan off
+  temperature = (temperature*5.0*100.0) /1240.0;    
   
+  Serial.println(temperature);
+ delay(2000);
+ 
   if(temperature > baselineTemp)
   {
     digitalWrite(Fan, HIGH);
@@ -176,7 +201,7 @@ void loop(){
   {
     digitalWrite(Fan, LOW);
   }
-  
+ 
 }
 
 long microsecondsToCentimeters(long microseconds)
