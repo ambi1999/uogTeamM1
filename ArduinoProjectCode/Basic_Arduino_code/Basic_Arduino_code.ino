@@ -5,7 +5,7 @@ We are Using a model B Pi and an Arduino MEGA 2560
 All code must be commented and code must compile before being commited!
 
 Code Written by: Ben Woodcock
-Edited By: Ashley Hathaway, Sava Minev and Ryan Maycroft
+Edited By: Ryan Maycroft, Ashley Hathaway,and Sava Minev
 Copyright PiBot Group
 */
 #define echoPin 7 // Echo Pin
