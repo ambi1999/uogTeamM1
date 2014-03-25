@@ -46,7 +46,18 @@ digitalWrite(motorPin1, HIGH);
    digitalWrite(motorPin2, LOW);
    delay(1000);
    }
+   
+void motorForward(){
+digitalWrite(motorPin1, HIGH);
+  digitalWrite(motorPin2, HIGH);
+delay(1000);
+}
 
+void motorTurnLeft(){
+digitalWrite(motorPin1,LOW);
+digitalWrite(motorPin2,HIGH);
+delay(1000);
+}
 void setup(){
  Serial.begin(9600); 
  pinMode(trigPin, OUTPUT);
@@ -127,8 +138,7 @@ void loop(){
   
   if (distance > safeZone) // if the distance is greater than the safezone (30cm) then the two motors will be high making the robot move forward
   {
-  digitalWrite(motorPin1, HIGH);
-  digitalWrite(motorPin2, HIGH); 
+  int motorForward (); 
   }
   else // however if the distance is shorter than the safezone then the servo motor will turn to 0 degrees
   {
@@ -188,7 +198,7 @@ void loop(){
   
   if (distance > safeZone)
   {
-   int motorTurnRight ();
+   int motorTurnLeft ();
   }
   else
   {
