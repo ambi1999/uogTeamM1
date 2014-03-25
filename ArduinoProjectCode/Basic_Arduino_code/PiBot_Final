@@ -1,0 +1,235 @@
+
+/*An Automated Robot controlled via a web-site hosted by the Raspberry Pi.
+The Raspberry Pi is connected to the Arduino and the Arduino powers the robot.
+We are Using a model B Pi and an Arduino MEGA 2560
+
+All code must be commented and code must compile before being commited!
+
+Code Written by: Ben Woodcock
+Edited By: Ashley Hathaway and Ryan Maycroft
+Copyright PiBot Group
+*/
+
+//ultra sonic sensor
+#define echoPin 42 // Echo Pin
+#define trigPin 40 // Trigger Pin
+int maximumRange = 200; // Maximum range needed
+int minimumRange = 0; // Minimum range needed
+long duration, distance; // Duration used to calculate distance
+int safeZone = 30; // this states that anywhere from 0 to 30 is the safezone
+int powerultra = 38;
+#define LEDPin 13 // Onboard LED - Which led is this?
+
+//servo
+#include <Servo.h> // references inbuilt arduino library 
+int powerservo = 32;
+Servo myservo;
+
+//temp sensor
+int powertemp = 46;//defines 5v for various componants
+const int tempsensorPin = A1;// this line states that the temperature sensor data will be coming in on the analog port 1
+const float baselineTemp = 25.0; //This sets the base line temperature at 32 degrees
+
+//motors
+const int motorPin1 = 2;//these lines of code set what pins are being used and by naming them it makes it easier to change
+const int motorPin2 = 3;//these lines of code set what pins are being used and by naming them it makes it easier to change
+
+//lights
+int powerPhoto = 49;
+const int lightSensorPin = A3; // this line states that the light sensor data will be coming in on the analog port 0 
+int lightSensorValue = 0; // This sets the light sensor value to 0 when starting 
+int InfraredLedLeft = 41;//these lines of code set what pins are being used and by naming them it makes it easier to change
+int InfraredLedRight = 39;//these lines of code set what pins are being used and by naming them it makes it easier to change
+int LEDpinsgreen= 35;//these lines of code set what pins are being used and by naming them it makes it easier to change
+int LEDpinsred= 37;//these lines of code set what pins are being used and by naming them it makes it easier to change
+int LEDwhite = 36;//these lines of code set what pins are being used and by naming them it makes it easier to change
+//fan
+int Fan = 47; //these lines of code set what pins are being used and by naming them it makes it easier to change
+
+void setup(){
+ Serial.begin(9600);
+ myservo.attach(34);  // attaches the servo on pin 34 to the servo object
+pinMode(powerultra, OUTPUT); 
+pinMode(powerservo, OUTPUT); 
+pinMode(powertemp, OUTPUT); 
+pinMode(powerPhoto, OUTPUT);
+ pinMode(trigPin, OUTPUT);
+ pinMode(echoPin, INPUT);
+ pinMode(LEDPin, OUTPUT);
+ pinMode(LEDpinsgreen, OUTPUT); // These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending
+ pinMode(LEDpinsred, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(Fan, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(motorPin1, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(motorPin2, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(InfraredLedLeft, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+
+ pinMode(LEDwhite, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(InfraredLedRight, OUTPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+
+ pinMode(tempsensorPin, INPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+ pinMode(lightSensorPin, INPUT);// These lines define what pins are outputs and what pins are inputs so when you digitalWrite something to the pins they know if they are recieving or sending 
+  
+  //start of code
+  //turns pins high to allow componants to work
+  digitalWrite(powertemp,HIGH);
+  digitalWrite(powerservo,HIGH);
+  digitalWrite(powerultra,HIGH);
+  digitalWrite(powerPhoto, HIGH);
+  digitalWrite(motorPin1,HIGH);
+  Serial.println("MOTOR OFF");
+ 
+  
+  
+   for(int i=0;i<20;i++){ // This for loop controls the led's blinking i have made this loop go round 15 times because the raspberry pi takes time to boot 
+    digitalWrite(LEDpinsred, HIGH);
+    delay(500);
+    digitalWrite(LEDpinsred, LOW);
+    delay(500);
+  }
+  for(int i=0;i<20;i++){// This for loop controls the final led's blinking that will give the indication that the raspberry pi is nearly booted 
+    digitalWrite(LEDpinsgreen,HIGH);
+    delay(500);
+    digitalWrite(LEDpinsgreen,LOW);
+    delay(500);
+  }
+  digitalWrite(LEDpinsgreen,HIGH);
+ digitalWrite(motorPin1,LOW);
+  Serial.println("MOTOR ON");
+  digitalWrite(motorPin2, LOW);
+
+}
+void loop(){
+
+ 
+   lightSensorValue = analogRead(lightSensorPin);
+  delay(1000);
+  Serial.print("Photo Resistor Value: ");
+  Serial.print(lightSensorValue);
+  Serial.println();
+  if(lightSensorValue<25)                // reads data from light sensor - if value is less than 780, switch on the Infrared LED
+                                          // if more than 780, the infrared light remains off
+  { 
+    
+  digitalWrite(InfraredLedLeft, HIGH);
+  digitalWrite(InfraredLedRight, HIGH);
+  digitalWrite(LEDwhite, HIGH);
+  Serial.println("All Lights on");
+
+
+  }
+  else if (lightSensorValue >=25 && lightSensorValue <=50) // however if the light sensor reads a value that is between 780 and 850 then two LED lights come on
+  {
+   digitalWrite(LEDwhite,HIGH);
+   digitalWrite(InfraredLedLeft, LOW);
+  digitalWrite(InfraredLedRight, LOW);
+  Serial.println("Infrared LED's only");
+  }
+  else 
+  {
+    digitalWrite(LEDwhite,LOW);
+      digitalWrite(InfraredLedLeft, LOW);
+  digitalWrite(InfraredLedRight, LOW);
+  Serial.println("All Lights off");
+    
+  }
+  
+digitalWrite(trigPin, LOW); 
+ delayMicroseconds(2); 
+
+ digitalWrite(trigPin, HIGH);
+ delayMicroseconds(10); 
+ 
+ digitalWrite(trigPin, LOW);
+ duration = pulseIn(echoPin, HIGH);
+ 
+ //Calculate the distance (in cm) based on the speed of sound.
+ distance = duration/58.2;
+  
+  
+  Serial.print("The Distance is: ");
+  Serial.print(distance);
+  Serial.print("cm"); // this section converts how long it took the ping to come back and then  multiplys that value to the speed it was sent out by and thats the calculation for distance 
+  Serial.println(); // then it takes the value and puts cm on it to make it a distance value
+  
+  if (distance > safeZone) // if the distance is greater than the safezone (30cm) then the two motors will be high making the robot move forward
+  {
+  digitalWrite(motorPin1, LOW); //activate motor system
+    Serial.println("MOTOR ON");
+  delay (100);
+  digitalWrite(motorPin2,LOW); // Go forwards for ten seconds
+  delay(10000);
+  digitalWrite(motorPin1, HIGH); // Deactivate motors
+    Serial.println("MOTOR OFF");
+  }
+  else // however if the distance is shorter than the safezone then the servo motor will turn to 0 degrees
+  {
+    digitalWrite(motorPin1, HIGH); // Deactivate motors
+      Serial.println("MOTOR OFF");
+    
+     myservo.write(90);
+     delay(1000);
+     myservo.write(5);
+    delay(1000);
+    myservo.write(90);
+      delay(1000);
+    myservo.write(175);
+    delay(1000);
+    myservo.write(90);
+   delay(1000);
+    digitalWrite(motorPin1, LOW); //activate motor system
+      Serial.println("MOTOR ON");
+  digitalWrite(motorPin2, HIGH); // Go backwards for ten seconds
+  delay (10000);
+  digitalWrite(motorPin1, HIGH); // Deactivate motors
+    Serial.println("MOTOR OFF");
+  }
+  delay(1000);
+
+   digitalWrite(trigPin, LOW); 
+ delayMicroseconds(2); 
+
+ digitalWrite(trigPin, HIGH);
+ delayMicroseconds(10); 
+ 
+ digitalWrite(trigPin, LOW);
+ duration = pulseIn(echoPin, HIGH);
+ 
+ //Calculate the distance (in cm) based on the speed of sound.
+ distance = duration/58.2;
+  
+  
+ 
+ 
+  
+  int sensorVal = analogRead(tempsensorPin);
+ 
+   //sensorVal=160;
+  Serial.print("Tempeture Sensor Value: "); 
+  Serial.println(sensorVal);
+  float temperature = sensorVal;                     // if temperature value higher than baseline (32 degree c) switch on fan .. if less than baseline, keep fan off
+  temperature = (temperature*5.0*100.0) /1240.0;    
+  
+  Serial.print("Tempeture: ");
+  Serial.print(temperature);
+  Serial.println(" Degrees Celcius");
+ delay(2000);
+ 
+  if(temperature > baselineTemp)
+  {
+    digitalWrite(Fan, HIGH); //fan on snd serial message
+    Serial.println("Fan Activated");
+  }
+  else
+  {
+    digitalWrite(Fan, LOW);//fan off snd serial message
+    Serial.println("Fan Deactivated");
+    Serial.println("---------------------------------------------------"); // allows a space so data is more readable in the serial monitor
+     
+  }
+ 
+}
+
+long microsecondsToCentimeters(long microseconds)
+{
+  return microseconds / 29 / 2;
+}
